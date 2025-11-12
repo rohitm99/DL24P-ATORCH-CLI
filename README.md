@@ -1,93 +1,313 @@
-# rohitm99-DL24P-ATORCH-CLI
 
+Complete Python controller for ATORCH DL24P electronic load with **READ and WRITE** capabilities.
 
+Successfully reverse engineered the **write command protocol** using Wireshark USB captures through Windows BW140 program.
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+### Write Command Format
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/rohitm99-group/rohitm99-DL24P-ATORCH-CLI.git
-git branch -M main
-git push -uf origin main
+55 05 01 [REGISTER] [VALUE_4_BYTES_BIG_ENDIAN] 00 00 00 ee ff [pad to 91 bytes]
 ```
 
-## Integrate with your tools
+**Example - Setting voltage cutoff to 5.0V:**
+```
+55 05 01 29 40 a0 00 00 ee ff 00 00 00 ... [zeros to 91 bytes]
+```
+Where:
+- `55 05` = Header/sync bytes
+- `01` = Write command
+- `29` = Register address (voltage cutoff)
+- `40 a0 00 00` = 5.0 as big-endian float
+- `ee ff` = Checksum/terminator
 
-- [ ] [Set up project integrations](https://gitlab.com/rohitm99-group/rohitm99-DL24P-ATORCH-CLI/-/settings/integrations)
 
-## Collaborate with your team
+### USB Permissions
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+Create udev rule for non-root access or run script with sudo.
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+### Basic Usage
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```python
+#!/usr/bin/env python3
+from dl24p_controller import DL24P
 
-***
+# Create controller
+dl24 = DL24P()
 
-# Editing this README
+# Connect and initialize
+if dl24.connect() and dl24.initialize():
+    
+    # Set voltage cutoff to 3.0V
+    dl24.set_voltage_cutoff(3.0)
+    
+    # Read measurements for 5 seconds
+    dl24.read_measurements(duration=5)
+    
+    # Disconnect
+    dl24.disconnect()
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Command Line Test
 
-## Suggestions for a good README
+```bash
+# Run the main controller (includes examples)
+python3 dl24p_controller.py
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+# Run voltage cutoff test
+python3 test_voltage_cutoff.py
+```
 
-## Name
-Choose a self-explaining name for your project.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### DL24P Class Methods
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+#### Connection
+- `connect()` - Connect to device via USB
+- `initialize()` - Initialize device and start data stream
+- `disconnect()` - Clean disconnect
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+#### Reading Data
+- `read_packet(timeout=2000)` - Read raw packet from device
+- `parse_packet(data)` - Parse packet into measurements
+- `read_measurements(duration=5)` - Read and display measurements
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+#### Writing Settings
+- `write_register(register, value)` - Write float value to register
+- `set_voltage_cutoff(voltage)` - Set voltage cutoff (V)
+- `set_current(current)` - Set load current (A)
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+#### Maintenance
+- `keep_alive()` - Send keep-alive to maintain connection
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Known Registers
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+| Register | Function | Value Type |
+|----------|----------|------------|
+| `0x21` | Set Current | Float (big-endian) |
+| `0x29` | Voltage Cutoff | Float (big-endian) |
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### Read Commands (Host to Device)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+**Mode Switch (Initialize):**
+```
+55 05 01 05 00 00 00 00 ee ff
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+**Request Config:**
+```
+55 05 01 03 00 00 00 00 ee ff
+```
 
-## License
-For open source projects, say how it is licensed.
+**Request Live Data:**
+```
+55 05 01 05 00 00 00 00 ee ff
+```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Write Commands (Host → Device)
+
+**Generic Write:**
+```
+55 05 01 [REG] [VAL_BYTE1] [VAL_BYTE2] [VAL_BYTE3] [VAL_BYTE4] 00 00 00 ee ff [zeros...]
+```
+- Total packet size: 91 bytes
+- Value: 4-byte **big-endian** float
+
+**Set Voltage Cutoff Examples:**
+
+2.0V:
+```
+55 05 01 29 40 00 00 00 ee ff 00 00 00 ...
+```
+
+5.0V:
+```
+55 05 01 29 40 a0 00 00 ee ff 00 00 00 ...
+```
+
+10.0V:
+```
+55 05 01 29 41 20 00 00 ee ff 00 00 00 ...
+```
+
+### Response Packets (Device → Host)
+
+**Live Data Response (aa 05 01 05):**
+- Bytes 8-11: Voltage (uint32, little-endian, /1000)
+- Bytes 12-15: Current (uint32, little-endian, /1000)
+- Bytes 16-19: Power (uint32, little-endian, /1000)
+- Bytes 20-23: Energy (uint32, little-endian, /100)
+- Bytes 28-31: Amp-hours (uint32, little-endian, /1000)
+- Bytes 36-39: Temperature (uint32, little-endian, /1000)
+
+**Config Response (aa 05 01 03):**
+- Floats in big-endian format
+- Index 0: Set current
+- Index 4: Cutoff voltage
+
+## 🔍 Discovery Process
+
+The write protocol was reverse engineered using:
+
+1. **Wireshark USB capture** on Windows while using official app
+2. **Pattern analysis** of packets during voltage changes
+3. **Float encoding detection** - discovered big-endian format
+4. **Command structure mapping** from captured packets
+
+Key findings:
+- Write commands use command byte `01`
+- Values are encoded as **big-endian floats** (different from read responses!)
+- Register `0x29` controls voltage cutoff
+- Packet must be padded to 91 bytes
+
+## 📝 Example Scripts
+
+### Set Voltage and Monitor
+
+```python
+from dl24p_controller import DL24P
+import time
+
+dl24 = DL24P()
+if dl24.connect() and dl24.initialize():
+    # Set low cutoff for testing
+    dl24.set_voltage_cutoff(2.0)
+    print("Monitoring with 2.0V cutoff...")
+    dl24.read_measurements(duration=10)
+    
+    # Raise cutoff
+    dl24.set_voltage_cutoff(5.0)
+    print("Now monitoring with 5.0V cutoff...")
+    dl24.read_measurements(duration=10)
+    
+    dl24.disconnect()
+```
+
+### Set Current and Test Load
+
+```python
+from dl24p_controller import DL24P
+import time
+
+dl24 = DL24P()
+if dl24.connect() and dl24.initialize():
+    # Test different current levels
+    for current in [1.0, 2.0, 3.0, 5.0]:
+        print(f"\nTesting {current}A load...")
+        dl24.set_current(current)
+        time.sleep(1)
+        dl24.read_measurements(duration=5)
+    
+    dl24.disconnect()
+```
+
+### Battery Discharge Cycle
+
+```python
+from dl24p_controller import DL24P
+import time
+
+dl24 = DL24P()
+if dl24.connect() and dl24.initialize():
+    # Set discharge parameters
+    dl24.set_voltage_cutoff(3.0)  # Stop at 3.0V
+    dl24.set_current(2.0)          # 2A discharge
+    
+    print("Starting battery discharge cycle...")
+    print("Will stop when voltage reaches 3.0V")
+    
+    # Monitor until cutoff
+    start_time = time.time()
+    while True:
+        data = dl24.read_packet()
+        if data:
+            parsed = dl24.parse_packet(data)
+            if parsed and parsed.get('voltage'):
+                v = parsed['voltage']
+                i = parsed['current']
+                print(f"{time.time()-start_time:.0f}s: {v:.3f}V, {i:.3f}A")
+                
+                if v < 3.1:  # Close to cutoff
+                    print("⚠️  Approaching cutoff voltage!")
+                    break
+        
+        time.sleep(1)
+    
+    dl24.disconnect()
+```
+
+### Sweep Voltages
+
+```python
+from dl24p_controller import DL24P
+import time
+
+dl24 = DL24P()
+if dl24.connect() and dl24.initialize():
+    voltages = [2.0, 3.0, 4.0, 5.0]
+    
+    for v in voltages:
+        print(f"\n=== Testing {v}V cutoff ===")
+        dl24.set_voltage_cutoff(v)
+        time.sleep(1)
+        dl24.read_measurements(duration=3)
+    
+    dl24.disconnect()
+```
+
+## Troubleshooting
+
+### Device Not Found
+```bash
+# Check if device is detected
+lsusb | grep 0483:5750
+
+# Check permissions
+ls -l /dev/bus/usb/*/***  # find your device
+```
+
+### Permission Denied
+- Make sure udev rules are installed
+- Try with sudo temporarily to verify it's a permissions issue
+- Unplug and replug device after adding udev rules
+
+### No Response from Device
+- Device might be in wrong mode - try power cycling it
+- Check if another program is using it: `lsof | grep usb`
+- Try increasing timeouts in the code
+
+### Write Not Working
+- Verify device initialized successfully
+- Check that keep-alive is running
+- Try writing after reading some data first
+
+## Next Steps
+
+### Registers to Discover
+- Set current limit
+- Set power limit  
+- Enable/disable load
+- Timer settings
+- Protection settings
+
+### Methods
+1. Capture more Wireshark traces while changing different settings
+2. Look for patterns in write commands
+3. Test discovered register addresses
+
+## 📖 References
+
+- [improwis DL24 Blog](https://www.improwis.com/projects/sw_dl24/) - Original BLE protocol
+- [Flaviu Tamas DL24M Reversing](https://flaviutamas.com/2022/dl24m-reversing) - BLE analysis
+- This project - USB HID protocol reverse engineering
+
+## 📄 License
+
+This is a reverse engineering project for educational and personal use.
+
+- Original BLE protocol work: improwis and Flaviu Tamas
+- USB protocol reverse engineering: This project
+- Testing and development: You!
+
+---
+
+**Happy load testing! ⚡**
