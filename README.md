@@ -1,7 +1,7 @@
 
 Complete Python controller for ATORCH DL24P electronic load with **READ and WRITE** capabilities.
 
-Successfully reverse engineered the **write command protocol** using Wireshark USB captures through Windows BW140 program.
+Successfully reverse engineered the **write command protocol** using Wireshark USB captures through Windows software provided by ATORCH vendor.
 
 ### Write Command Format
 ```
@@ -306,8 +306,6 @@ This is a reverse engineering project for educational and personal use.
 
 - Original BLE protocol work: improwis and Flaviu Tamas
 - USB protocol reverse engineering: This project
-- Testing and development: You!
-
 ---
 
-**Happy load testing! ⚡**
+**Happy load testing!**
