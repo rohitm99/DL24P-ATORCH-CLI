@@ -253,6 +253,14 @@ if dl24.connect() and dl24.initialize():
     
     dl24.disconnect()
 ```
+### Plotting
+```bash
+# Create a live plot of CC mode measurements from DL24P
+# Example with 3.0 V cutoff and 2.0 A CC
+
+python3 battery_cycler_plot.py --cutoff 3.0 --current 2.0 --output filename.csv
+
+
 
 ## Troubleshooting
 
@@ -304,8 +312,5 @@ ls -l /dev/bus/usb/*/***  # find your device
 
 This is a reverse engineering project for educational and personal use.
 
-- Original BLE protocol work: improwis and Flaviu Tamas
-- USB protocol reverse engineering: This project
----
 
 **Happy load testing!**
