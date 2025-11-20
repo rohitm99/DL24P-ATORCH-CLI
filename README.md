@@ -291,16 +291,16 @@ ls -l /dev/bus/usb/*/***  # find your device
 ## Next Steps
 
 ### Registers to Discover
-- Set current limit
+~~- Set current limit~~ (Completed)
 - Set power limit  
-- Enable/disable load
+~~- Enable/disable load~~ (Completed)
 - Timer settings
 - Protection settings
 
 ### Methods
-1. Capture more Wireshark traces while changing different settings
-2. Look for patterns in write commands
-3. Test discovered register addresses
+1. Capture more Wireshark traces while changing different settings using Windows software
+2. Look for byte-change patterns in write commands
+3. Test discovered register addresses through write commands
 
 ## 📖 References
 
