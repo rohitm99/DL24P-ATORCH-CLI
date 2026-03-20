@@ -1,7 +1,6 @@
+Python controller for ATORCH DL24P electronic load with **READ and WRITE** capabilities. This is for the V1.1.0 DL24P ATORCH load tester available on Amazon. This is a WIP with MOSTLY complete functionality for the DL24P device. Certain commands and registers have not yet been completed, but only due to lack of time. Feel free to use this code as a starting point for exploration, and potentially contributing to the full control of this device with findings updated here!
 
-Complete Python controller for ATORCH DL24P electronic load with **READ and WRITE** capabilities. This is for the V1.1.0 DL24P ATORCH load tester available on Amazon.
-
-Successfully reverse engineered the **write command protocol** using Wireshark USB captures through Windows software provided by ATORCH vendor.
+Reverse engineered the **write command protocol** using Wireshark USB captures through Windows software provided by ATORCH vendor.
 
 ### Write Command Format
 ```
