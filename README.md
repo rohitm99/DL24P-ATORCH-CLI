@@ -143,7 +143,7 @@ python3 test_voltage_cutoff.py
 - Index 0: Set current
 - Index 4: Cutoff voltage
 
-## 🔍 Discovery Process
+## Discovery Process
 
 The write protocol was reverse engineered using:
 
@@ -158,7 +158,7 @@ Key findings:
 - Register `0x29` controls voltage cutoff
 - Packet must be padded to 91 bytes
 
-## 📝 Example Scripts
+## Example Scripts
 
 ### Set Voltage and Monitor
 
@@ -301,13 +301,13 @@ ls -l /dev/bus/usb/*/***  # find your device
 2. Look for byte-change patterns in write commands
 3. Test discovered register addresses through write commands
 
-## 📖 References
+## References
 
 - [improwis DL24 Blog](https://www.improwis.com/projects/sw_dl24/) - Original BLE protocol
 - [Flaviu Tamas DL24M Reversing](https://flaviutamas.com/2022/dl24m-reversing) - BLE analysis
 - This project - USB HID protocol reverse engineering
 
-## 📄 License
+
 
 This is a reverse engineering project for educational and personal use.
 
